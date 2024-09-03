@@ -12,10 +12,10 @@ real, parameter :: density = 1.395       ! g/cm3
 real, parameter :: avogadro = 6.022E23  
 real, parameter :: mw = 40.0             ! g/mol
 real :: length,r,potential
-real, allocatable :: atoms(3,:)          ! positions
-real, allocatable :: velocity(3,:)       ! velocities
+real, allocatable :: atoms(:,:)          ! positions
+real, allocatable :: velocity(:,:)       ! velocities
 real, allocatable :: velocity_sq(:)      ! sqrt of the sum of squares of velocity components
-real, allocatable :: force(3,:),acceleration(3,:)
+real, allocatable :: force(:,:),acceleration(:,:)
 real :: box(200,200,200)
 integer :: num_atoms = 1000
 integer :: i,j,k,n,m,t,grid,nk,nstep
