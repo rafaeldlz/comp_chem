@@ -16,20 +16,21 @@ module force_energy_mod
         do i = 1, num_atoms
          do j = 1, num_atoms
 
+         ! Only work on unique pairs of atoms
          if (i.eq.j) cycle
 
-         ! Calculate distance between 2 atoms
+         ! Calculate the distance between the atoms, using PBC
          rij(:) = atoms(:,i) - atoms(:,j)
          rij(:) = rij(:) - (length*(anint(rij(:)/length)))
          rij_sq = sum(rij(:)**2)
          distance = sqrt(rij_sq)
 
-         ! Calculate forces
+         ! Calculate the forces between the atoms
          sr2 = (sigma**2)/rij_sq
          sr6 = sr2**3
          force(:,i) = force(:,i) + ((24*disp_e/rij_sq)*((2 * sr6**2) - sr6) * distance * (rij(:)/distance))
 
-         ! Calculate potential between 2 atoms
+         ! Calculate the potential between the atoms
          sr12 = sr6*sr6
          energy_p = energy_p +( 4.0 * disp_e * (sr12 - sr6))
 
