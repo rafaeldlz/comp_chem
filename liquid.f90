@@ -74,10 +74,14 @@ sigma_bk = sqrt(boltz_k * temp / (mw*(1E-3)/avogadro))
 
 ! Generate 500 pairs each x y z
 do i=1,500
+ 
+ ! Assign a random value to r
  call get_rand(r,n)
  r1 = r
  call get_rand(r,n)
  r2 = r
+
+ ! Initiate the velocities
  velocity(1,i)     = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
  velocity(1,i+500) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
 
@@ -97,27 +101,32 @@ do i=1,500
 
 end do
 
+! Update the velocity magnitudes
 velocity_sq(:) = sqrt(velocity(1,:)**2 + velocity(2,:)**2 + velocity(3,:)**2) 
 
-! Make histogram
+! Make the histogram
 call make_histogram(velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
 
-! Calculate initial forces and energies
+! Calculate the initial forces and energies
 print *, "length", length
 energy_p = 0.0
 energy_tot = 0.0
 energy_k = 0.0
 
+! Update the forces and calculate the potential energy of the system
 call force_energy(num_atoms,atoms,length,force,energy_p)
 print *, "start change in v", force(:,i) * dt * 0.5 /  (mw*(1E-3)/avogadro)
 
+! Update the kinetic energy of the system
 do i = 1, num_atoms
  energy_k = energy_k + (0.5*(mw*(1E-3)/avogadro)*sum(velocity(:,i)**2))
 end do
 
+! Update the total energy of the system
 energy_tot = energy_p + energy_k
 write (13,fmt="(A4,5x,3(E10.4,3x))") "0", energy_tot, energy_p, energy_k
 
+! Write the forces to output
 write (15,*) "Timestep = 0"
 do i=1,num_atoms
  write (15,*) force(:,i)
@@ -137,12 +146,14 @@ do t=1,num_steps
 
  ! Move the atoms
  do i = 1, num_atoms
+
+  ! Update the accelerations, velocities, and positions
   acceleration(:,i) = force(:,i) / (mw*(1E-3)/avogadro)
   velocity(:,i)   = velocity(:,i) + (0.5 * dt * acceleration(:,i))
   atoms(:,i)      = atoms(:,i) + (dt * velocity(:,i))
  end do
 
- ! PBC
+ ! Apply PBC
  do i = 1, num_atoms
   do j = 1, 3
    if (atoms(j,i).gt.length) atoms(j,i) = atoms(j,i) - length
@@ -150,44 +161,45 @@ do t=1,num_steps
   end do
  end do
 
- ! Check velocities
+ ! Write the velocities to output
  write (16,*) t
  do i = 1, num_atoms
   write (16,*) velocity(:,i)
  end do
 
- ! Call force subroutine
+ ! Call the force + energy subroutine
  energy_p = 0.0
  call force_energy(num_atoms,atoms,length,force,energy_p)
 
- ! Check forces
+ ! Write the forces to output
  write (15,*) "Timestep",t
  do i=1,num_atoms
   write (15,*) force(:,i)
  end do
 
-! print *, "Update velocity. Full"
+! Update the accelerations and velocities
  do i = 1, num_atoms
   acceleration(:,i) = force(:,i) / (mw*(1E-3)/avogadro)
   velocity(:,i)   = velocity(:,i) + (0.5 * dt * acceleration(:,i))
  end do
 
- ! Check velocities
+ ! Write the velocities to output
  write (16,*) t
  do i = 1, num_atoms
   write (16,*) velocity(:,i)
  end do
 
- ! Calculate total energy
+ ! Calculate the kinetic energy of the system
  energy_k = 0.0
  do i = 1, num_atoms
   energy_k = energy_k + (0.5*(mw*(1E-3)/avogadro)*sum(velocity(:,i)**2))
  end do
- 
+
+ ! Calculate the total energy of the system
  energy_tot = energy_p + energy_k
  write (13,fmt="(I4,5x,3(E10.4,3x))") t, energy_tot, energy_p, energy_k
  
- ! Write new positions to output
+ ! Write the new positions to output
  write (11,fmt="(A)") "1000"
  write (11,*) "Timestep #", t
  do i = 1, num_atoms
@@ -199,7 +211,7 @@ do t=1,num_steps
  
 end do
 
-! Close output files
+! Close the output files
 do i=11,16
  close (i)
 end do
