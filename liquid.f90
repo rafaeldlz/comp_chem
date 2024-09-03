@@ -73,7 +73,6 @@ print *, "Initial velocity distribution"
 sigma_bk = sqrt(boltz_k * temp / (mw*(1E-3)/avogadro))
 
 ! Generate 500 pairs each x y z
-
 do i=1,500
  call get_rand(r,n)
  r1 = r
