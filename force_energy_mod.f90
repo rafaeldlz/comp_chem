@@ -3,7 +3,7 @@ module force_energy_mod
       public
       contains
       subroutine force_energy(num_atoms,atoms,length,force,energy_p)
-        real :: atoms(3,1000),force(3,1000),energy_p,length
+        real :: atoms(:,:),force(:,:),energy_p,length
         real :: rij(3), sr2,sr6,sr12,rij_sq,distance
         real, parameter :: sigma = 3.40E-10      ! meters
         real, parameter :: avogadro = 6.022E23

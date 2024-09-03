@@ -16,8 +16,9 @@ real, allocatable :: atoms(:,:)          ! positions
 real, allocatable :: velocity(:,:)       ! velocities
 real, allocatable :: velocity_sq(:)      ! sqrt of the sum of squares of velocity components
 real, allocatable :: force(:,:),acceleration(:,:)
+real, allocatable :: atoms_rdf(:,:)
 real :: box(200,200,200)
-integer :: num_atoms = 1000
+integer :: num_atoms = 100
 integer :: i,j,k,n,m,t,grid,nk,nstep
 real :: histogram(5000)                  ! Histogram for RDF
 real :: g(5000)                          ! RDF
@@ -49,6 +50,7 @@ allocate(atoms(3,num_atoms))
 allocate(velocity(3,num_atoms))
 allocate(velocity_sq(num_atoms))
 allocate(force(3,num_atoms), acceleration(3,num_atoms))
+allocate(atoms_rdf(3,num_atoms))
 
 disp_e = 0.997 * 4184 / avogadro
 
@@ -66,10 +68,11 @@ do i = 1, 10
   do j = 1, 10
     do k = 1, 10
       n = n + 1
+      if(n > num_atoms) exit
       atoms(1,n) = i*length*0.1
       atoms(2,n) = j*length*0.1
       atoms(3,n) = k*length*0.1
-      write (11,fmt=*) "Ar", atoms(:,i)
+      write (11,fmt=*) "Ar", atoms(:,n)
     end do
   end do
 end do
@@ -79,7 +82,7 @@ print *, "Initial velocity distribution"
 sigma_bk = sqrt(boltz_k * temp / (mw*(1E-3)/avogadro))
 
 ! Generate 500 pairs each x y z
-do i=1,500
+do i=1,num_atoms/2
  
  ! Assign a random value to r
  call get_rand(r,n)
@@ -89,21 +92,21 @@ do i=1,500
 
  ! Initiate the velocities
  velocity(1,i)     = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
- velocity(1,i+500) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
+ velocity(1,i+num_atoms/2) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
 
  call get_rand(r,n)
  r1 = r
  call get_rand(r,n)
  r2 = r
  velocity(2,i)     = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
- velocity(2,i+500) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
+ velocity(2,i+num_atoms/2) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
 
  call get_rand(r,n)
  r1 = r
  call get_rand(r,n)
  r2 = r
  velocity(3,i)     = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
- velocity(3,i+500) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
+ velocity(3,i+num_atoms/2) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
 
 end do
 
@@ -111,7 +114,7 @@ end do
 velocity_sq(:) = sqrt(velocity(1,:)**2 + velocity(2,:)**2 + velocity(3,:)**2) 
 
 ! Make the histogram
-call make_histogram(velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
+call make_histogram(num_atoms,velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
 
 ! Calculate the initial forces and energies
 print *, "length", length
@@ -213,7 +216,7 @@ do t=1,num_steps
  end do
  
  ! Do RDF for the last 1000 steps
- if (t.ge.9000) call rdf(num_atoms,atoms,length,t,sigma,g,num_steps)
+! if (t.ge.num_steps-100) call rdf(num_atoms,atoms,atoms_rdf,length,t,sigma,g,num_steps)
  
 end do
 
@@ -226,5 +229,6 @@ deallocate(atoms)
 deallocate(velocity)
 deallocate(velocity_sq)
 deallocate(force, acceleration)
+deallocate(atoms_rdf)
 
 end program liquid

@@ -2,9 +2,11 @@ module rdf_mod
       implicit none
       public
       contains
-      subroutine rdf(num_atoms,atoms,length,t,sigma,g,num_steps)
+
+      subroutine rdf(num_atoms,atoms,atoms_rdf,length,t,sigma,g,num_steps)
               integer :: num_atoms, num_steps
-              real :: atoms(3,1000), length, sigma, atoms_rdf(3,1000)
+              real :: atoms(:,:), length, sigma
+              real, allocatable :: atoms_rdf(:,:)
               integer :: t, i, k, j, nk
               real :: histogram(5000)                  ! Histogram for RDF
               real :: g(5000)                          ! RDF
@@ -62,4 +64,5 @@ module rdf_mod
 
               end if
       end subroutine
+
 end module rdf_mod

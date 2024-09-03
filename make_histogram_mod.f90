@@ -3,9 +3,10 @@ module make_histogram_mod
       public
       contains
 
-      subroutine make_histogram(velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
-              real :: velocity(3,1000)
-              real :: velocity_sq(1000)
+      subroutine make_histogram(num_atoms,velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
+              integer :: num_atoms
+              real :: velocity(:,:)
+              real :: velocity_sq(:)
               real :: set_min, set_max, bin_width
               integer :: n_bin, histo_velocity(100), histo_velx(100), bin_index, i
 
@@ -22,13 +23,13 @@ module make_histogram_mod
               histo_velx = 0
 
               ! Histogram for x-component
-              do i = 1, 1000
+              do i = 1, num_atoms
                bin_index = floor((velocity(1,i)-set_min)/bin_width) + 1
                if (bin_index .le. n_bin) histo_velx(bin_index) = histo_velx(bin_index) + 1
               end do
 
               ! Histogram for velocities
-              do i = 1, 1000
+              do i = 1, num_atoms
                bin_index = floor((velocity_sq(i)-set_min)/bin_width) + 1
                if (bin_index .le. n_bin) histo_velocity(bin_index) = histo_velocity(bin_index) + 1
               end do
@@ -40,5 +41,6 @@ module make_histogram_mod
                 &(set_min+(i-0.5)*bin_width),histo_velocity(i),histo_velx(i)
               end do
       end subroutine
+
 end module make_histogram_mod
 
