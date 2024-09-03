@@ -12,11 +12,12 @@ real, parameter :: density = 1.395       ! g/cm3
 real, parameter :: avogadro = 6.022E23  
 real, parameter :: mw = 40.0             ! g/mol
 real :: length,r,potential
-real :: atoms(3,1000)                    ! positions
-real :: velocity(3,1000)                 ! velocities
-real :: velocity_sq(1000)                ! sqrt of the sum of squares of velocity components
-real :: force(3,1000),acceleration(3,1000),box(200,200,200)
-integer, parameter :: num_atoms = 1000
+real, allocatable :: atoms(3,:)                    ! positions
+real, allocatable :: velocity(3,:)                 ! velocities
+real, allocatable :: velocity_sq(:)                ! sqrt of the sum of squares of velocity components
+real, allocatable :: force(3,:),acceleration(3,:)
+real :: box(200,200,200)
+integer :: num_atoms = 1000
 integer :: i,j,k,n,m,t,grid,nk,nstep
 real :: histogram(5000)                  ! Histogram for RDF
 real :: g(5000)                          ! RDF
@@ -34,8 +35,6 @@ real :: set_min, set_max, bin_width
 integer :: n_bin, histo_velocity(100), histo_velx(100), bin_index
 integer :: num_steps = 100
 
-disp_e = 0.997 * 4184 / avogadro
-
 ! Output files
 open (unit=11,file="liquid.xyz")
 write (11,fmt="(A)") "1000"
@@ -45,6 +44,13 @@ write (13, fmt="(4(A10,4x))") "Step","Total E","Potential","Kinetic"
 open (unit=14, file="histo-velocity.dat")
 open (unit=15, file="forces.dat")
 open (unit=16, file="timestep-velocities.dat")
+
+allocate(atoms(3,num_atoms))
+allocate(velocity(3,num_atoms))
+allocate(velocity_sq(num_atoms))
+allocate(force(3,num_atoms), acceleration(3,num_atoms))
+
+disp_e = 0.997 * 4184 / avogadro
 
 ! Calculate the length of the box
 length = (num_atoms)*(avogadro**-1)*(mw)*(density**-1)*(1E-6)
@@ -215,5 +221,10 @@ end do
 do i=11,16
  close (i)
 end do
+
+deallocate(atoms)
+deallocate(velocity)
+deallocate(velocity_sq)
+deallocate(force, acceleration)
 
 end program liquid
