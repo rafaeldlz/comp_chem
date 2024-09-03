@@ -5,8 +5,7 @@ module rdf_mod
 
       subroutine rdf(num_atoms,atoms,atoms_rdf,length,t,sigma,g,num_steps)
               integer :: num_atoms, num_steps
-              real :: atoms(:,:), length, sigma
-              real, allocatable :: atoms_rdf(:,:)
+              real :: atoms(:,:), length, sigma, atoms_rdf(:,:)
               integer :: t, i, k, j, nk
               real :: histogram(5000)                  ! Histogram for RDF
               real :: g(5000)                          ! RDF
