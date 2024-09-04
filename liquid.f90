@@ -12,16 +12,15 @@ real, parameter :: density = 1.395       ! g/cm3
 real, parameter :: avogadro = 6.022E23  
 real, parameter :: mw = 40.0             ! g/mol
 real :: length,r,potential
-real, allocatable :: atoms(:,:)          ! positions
-real, allocatable :: velocity(:,:)       ! velocities
-real, allocatable :: velocity_sq(:)      ! sqrt of the sum of squares of velocity components
-real, allocatable :: force(:,:),acceleration(:,:)
-real, allocatable :: atoms_rdf(:,:)
+integer, parameter :: num_atoms = 100
+real :: atoms(3,num_atoms)               ! positions
+real :: velocity(3,num_atoms)            ! velocities
+real :: velocity_sq(num_atoms)           ! sqrt of the sum of squares of velocity components
+real :: force(3,num_atoms),acceleration(3,num_atoms)
 real :: box(200,200,200)
-integer :: num_atoms = 100
 integer :: i,j,k,n,m,t,grid,nk,nstep
-real :: histogram(5000)                  ! Histogram for RDF
-real :: g(5000)                          ! RDF
+real :: histogram(5*num_atoms)           ! Histogram for RDF
+real :: g(5*num_atoms)                   ! RDF
 real :: dr, r1, r2, density_sigma
 real :: rij(3)
 real :: rij_sq,r_hi,r_lo,h_id,const,rho
@@ -34,7 +33,7 @@ real, parameter :: dt = 5.0E-15          ! femtoseconds
 real :: total_time
 real :: set_min, set_max, bin_width
 integer :: n_bin, histo_velocity(100), histo_velx(100), bin_index
-integer :: num_steps = 100
+integer, parameter :: num_steps = 100
 
 ! Output files
 open (unit=11,file="liquid.xyz")
@@ -45,12 +44,6 @@ write (13, fmt="(4(A10,4x))") "Step","Total E","Potential","Kinetic"
 open (unit=14, file="histo-velocity.dat")
 open (unit=15, file="forces.dat")
 open (unit=16, file="timestep-velocities.dat")
-
-allocate(atoms(3,num_atoms))
-allocate(velocity(3,num_atoms))
-allocate(velocity_sq(num_atoms))
-allocate(force(3,num_atoms), acceleration(3,num_atoms))
-allocate(atoms_rdf(3,num_atoms))
 
 disp_e = 0.997 * 4184 / avogadro
 
@@ -216,7 +209,7 @@ do t=1,num_steps
  end do
  
  ! Do RDF for the last 1000 steps
-! if (t.ge.num_steps-100) call rdf(num_atoms,atoms,atoms_rdf,length,t,sigma,g,num_steps)
+ if (t.ge.num_steps-100) call rdf(num_atoms,atoms,histogram,length,t,sigma,g,num_steps)
  
 end do
 
@@ -224,11 +217,5 @@ end do
 do i=11,16
  close (i)
 end do
-
-deallocate(atoms)
-deallocate(velocity)
-deallocate(velocity_sq)
-deallocate(force, acceleration)
-deallocate(atoms_rdf)
 
 end program liquid
