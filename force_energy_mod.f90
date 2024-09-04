@@ -1,16 +1,22 @@
 module force_energy_mod
       implicit none
-      public
+
+      private
+      public force_energy
+
       contains
+
       subroutine force_energy(num_atoms,atoms,length,force,energy_p)
-        real :: atoms(:,:),force(:,:),energy_p,length
+        integer, intent(in) :: num_atoms
+        real, intent(in) :: atoms(:,:),length
+        real, intent(inout) :: force(:,:), energy_p
         real :: rij(3), sr2,sr6,sr12,rij_sq,distance
         real, parameter :: sigma = 3.40E-10      ! meters
         real, parameter :: avogadro = 6.022E23
         real :: disp_e                           ! kcal/mol
-        integer :: i,j,num_atoms
-        disp_e = 0.997 * 4184 / avogadro         ! convert from kcal/mol to j/atom
+        integer :: i,j
 
+        disp_e = 0.997 * 4184 / avogadro         ! convert from kcal/mol to j/atom
         force = 0.0
 
         do i = 1, num_atoms
@@ -36,6 +42,6 @@ module force_energy_mod
 
          end do
         end do
-
       end subroutine force_energy
+
 end module force_energy_mod

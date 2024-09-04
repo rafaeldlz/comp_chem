@@ -1,15 +1,19 @@
 module rdf_mod
       implicit none
-      public
+
+      private
+      public rdf
+
       contains
 
       subroutine rdf(num_atoms,atoms,histogram,length,t,sigma,g,num_steps)
-              integer :: num_atoms, num_steps
-              real :: atoms(:,:), length, sigma
+              integer, intent(in) :: num_atoms, num_steps
+              real, intent(in) :: atoms(:,:), length, sigma
               real, allocatable :: atoms_rdf(:,:)
-              integer :: t, i, k, j, nk
-              real :: histogram(:)                  ! Histogram for RDF
-              real :: g(:)                          ! RDF
+              integer, intent(in) :: t
+              integer :: i, j, k, nk
+              real, intent(inout) :: histogram(:)     ! Histogram for RDF
+              real, intent(inout) :: g(:)             ! RDF
               real :: dr, r1, r2, density_sigma
               real :: rij(3)
               real :: rij_sq,r_hi,r_lo,h_id,const,rho

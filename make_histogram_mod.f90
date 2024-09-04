@@ -1,14 +1,18 @@
 module make_histogram_mod
       implicit none
-      public
+
+      private
+      public make_histogram
+
       contains
 
       subroutine make_histogram(num_atoms,velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
-              integer :: num_atoms
-              real :: velocity(:,:)
-              real :: velocity_sq(:)
-              real :: set_min, set_max, bin_width
-              integer :: n_bin, histo_velocity(100), histo_velx(100), bin_index, i
+              integer, intent(in) :: num_atoms
+              real, intent(in) :: velocity(:,:)
+              real, intent(in) :: velocity_sq(:)
+              real, intent(out) :: set_min, set_max, bin_width
+              integer, intent(out) :: n_bin, histo_velocity(100), histo_velx(100), bin_index
+              integer :: i
 
               ! Set range of velocities
               set_min = 800.0

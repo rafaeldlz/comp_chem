@@ -5,29 +5,24 @@ use force_energy_mod
 use rdf_mod
 implicit none
 
-real :: disp_e                           ! kcal/mol
 real, parameter :: sigma = 3.40E-10      ! meters
 real ::  sigma_bk 
 real, parameter :: density = 1.395       ! g/cm3
 real, parameter :: avogadro = 6.022E23  
 real, parameter :: mw = 40.0             ! g/mol
-real :: length,r,potential
+real :: length,r
 integer, parameter :: num_atoms = 100
 real :: atoms(3,num_atoms)               ! positions
 real :: velocity(3,num_atoms)            ! velocities
 real :: velocity_sq(num_atoms)           ! sqrt of the sum of squares of velocity components
 real :: force(3,num_atoms),acceleration(3,num_atoms)
-real :: box(200,200,200)
-integer :: i,j,k,n,m,t,grid,nk,nstep
+integer :: i,j,k,n,t
 real :: histogram(5*num_atoms)           ! Histogram for RDF
 real :: g(5*num_atoms)                   ! RDF
-real :: dr, r1, r2, density_sigma
-real :: rij(3)
-real :: rij_sq,r_hi,r_lo,h_id,const,rho
+real :: r1, r2
 real, parameter :: pi = 4.0*atan(1.0)
 real, parameter :: temp = 85.0           ! Kelvin
 real, parameter :: boltz_k = 1.380649E-23
-real :: sr2, sr6, sr12
 real :: energy_tot, energy_p, energy_k 
 real, parameter :: dt = 5.0E-15          ! femtoseconds
 real :: total_time
@@ -45,15 +40,11 @@ open (unit=14, file="histo-velocity.dat")
 open (unit=15, file="forces.dat")
 open (unit=16, file="timestep-velocities.dat")
 
-disp_e = 0.997 * 4184 / avogadro
-
 ! Calculate the length of the box
 length = (num_atoms)*(avogadro**-1)*(mw)*(density**-1)*(1E-6)
 length = length**(1.0/3.0)
 write (11,fmt="(A,1x,E8.2,1x,A)") "Length of box:",length,"meters"
 print *, length
-
-grid = int(length)
 
 ! Generate initial coordinates (units = meters)
 n = 0
@@ -75,32 +66,16 @@ print *, "Initial velocity distribution"
 sigma_bk = sqrt(boltz_k * temp / (mw*(1E-3)/avogadro))
 
 ! Generate 500 pairs each x y z
-do i=1,num_atoms/2
- 
+do j = 1, num_atoms/2
  ! Assign a random value to r
- call get_rand(r,n)
- r1 = r
- call get_rand(r,n)
- r2 = r
-
- ! Initiate the velocities
- velocity(1,i)     = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
- velocity(1,i+num_atoms/2) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
-
- call get_rand(r,n)
- r1 = r
- call get_rand(r,n)
- r2 = r
- velocity(2,i)     = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
- velocity(2,i+num_atoms/2) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
-
- call get_rand(r,n)
- r1 = r
- call get_rand(r,n)
- r2 = r
- velocity(3,i)     = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
- velocity(3,i+num_atoms/2) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
-
+ do i = 1, 3
+  call get_rand(r,n)
+  r1 = r
+  call get_rand(r,n)
+  r2 = r
+  velocity(i,j)             = sigma_bk * sqrt(-2.0*LOG(r1)) * cos(2.0*pi*r2)
+  velocity(i,j+num_atoms/2) = sigma_bk * sqrt(-2.0*LOG(r1)) * sin(2.0*pi*r2)
+ end do
 end do
 
 ! Update the velocity magnitudes
@@ -209,7 +184,7 @@ do t=1,num_steps
  end do
  
  ! Do RDF for the last 1000 steps
- if (t.ge.num_steps-100) call rdf(num_atoms,atoms,histogram,length,t,sigma,g,num_steps)
+! if (t.ge.num_steps-100) call rdf(num_atoms,atoms,histogram,length,t,sigma,g,num_steps)
  
 end do
 
