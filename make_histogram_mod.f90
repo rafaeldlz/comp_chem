@@ -6,12 +6,12 @@ module make_histogram_mod
 
       contains
 
-      subroutine make_histogram(num_atoms,velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
+      subroutine make_histogram(num_atoms,velocity,velocity_sq)
               integer, intent(in) :: num_atoms
               real, intent(in) :: velocity(:,:)
               real, intent(in) :: velocity_sq(:)
-              real, intent(out) :: set_min, set_max, bin_width
-              integer, intent(out) :: n_bin, histo_velocity(100), histo_velx(100), bin_index
+              real :: set_min, set_max, bin_width
+              integer :: n_bin, histo_velocity(100), histo_velx(100), bin_index
               integer :: i
 
               ! Set range of velocities

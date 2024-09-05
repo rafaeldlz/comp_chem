@@ -5,20 +5,18 @@ use force_energy_mod
 use rdf_mod
 implicit none
 
-real, parameter :: sigma = 3.40E-10      ! meters
+real, parameter :: sigma = 3.40          ! angstroms
 real ::  sigma_bk 
 real, parameter :: density = 1.395       ! g/cm3
 real, parameter :: avogadro = 6.022E23  
 real, parameter :: mw = 40.0             ! g/mol
 real :: length,r
-integer, parameter :: num_atoms = 100
+integer, parameter :: num_atoms = 1000
 real :: atoms(3,num_atoms)               ! positions
 real :: velocity(3,num_atoms)            ! velocities
 real :: velocity_sq(num_atoms)           ! sqrt of the sum of squares of velocity components
 real :: force(3,num_atoms),acceleration(3,num_atoms)
 integer :: i,j,k,n,t
-real :: histogram(5*num_atoms)           ! Histogram for RDF
-real :: g(5*num_atoms)                   ! RDF
 real :: r1, r2
 real, parameter :: pi = 4.0*atan(1.0)
 real, parameter :: temp = 85.0           ! Kelvin
@@ -26,9 +24,7 @@ real, parameter :: boltz_k = 1.380649E-23
 real :: energy_tot, energy_p, energy_k 
 real, parameter :: dt = 5.0E-15          ! femtoseconds
 real :: total_time
-real :: set_min, set_max, bin_width
-integer :: n_bin, histo_velocity(100), histo_velx(100), bin_index
-integer, parameter :: num_steps = 100
+integer, parameter :: num_steps = 1
 
 ! Output files
 open (unit=11,file="liquid.xyz")
@@ -43,8 +39,9 @@ open (unit=16, file="timestep-velocities.dat")
 ! Calculate the length of the box
 length = (num_atoms)*(avogadro**-1)*(mw)*(density**-1)*(1E-6)
 length = length**(1.0/3.0)
-write (11,fmt="(A,1x,E8.2,1x,A)") "Length of box:",length,"meters"
-print *, length
+length = length*(1E10)
+write (11,fmt="(A,1x,E8.2,1x,A)") "Length of box:",length,"angstroms"
+print *, "Length:", length, "A"
 
 ! Generate initial coordinates (units = meters)
 n = 0
@@ -82,7 +79,7 @@ end do
 velocity_sq(:) = sqrt(velocity(1,:)**2 + velocity(2,:)**2 + velocity(3,:)**2) 
 
 ! Make the histogram
-call make_histogram(num_atoms,velocity,velocity_sq,set_min,set_max,n_bin,bin_width,histo_velocity,histo_velx,bin_index)
+call make_histogram(num_atoms,velocity,velocity_sq)
 
 ! Calculate the initial forces and energies
 print *, "length", length
@@ -113,8 +110,6 @@ end do
 print *, "Starting Velocity Verlet"
 
 total_time = 0.0
-histogram = 0.0
-g = 0.0
 
 do t=1,num_steps
  print *, "Timestep #", t
@@ -184,7 +179,7 @@ do t=1,num_steps
  end do
  
  ! Do RDF for the last 1000 steps
-! if (t.ge.num_steps-100) call rdf(num_atoms,atoms,histogram,length,t,sigma,g,num_steps)
+ if (t.ge.num_steps-100) call rdf(num_atoms,atoms,length,t,sigma,num_steps)
  
 end do
 

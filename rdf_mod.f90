@@ -6,25 +6,27 @@ module rdf_mod
 
       contains
 
-      subroutine rdf(num_atoms,atoms,histogram,length,t,sigma,g,num_steps)
+      subroutine rdf(num_atoms,atoms,length,t,sigma,num_steps)
               integer, intent(in) :: num_atoms, num_steps
               real, intent(in) :: atoms(:,:), length, sigma
               real, allocatable :: atoms_rdf(:,:)
               integer, intent(in) :: t
               integer :: i, j, k, nk
-              real, intent(inout) :: histogram(:)     ! Histogram for RDF
-              real, intent(inout) :: g(:)             ! RDF
+              real :: histogram(5*num_atoms)        ! Histogram for RDF
+              real :: g(5*num_atoms)                ! RDF
               real :: dr, r1, r2, density_sigma
               real :: rij(3)
               real :: rij_sq,r_hi,r_lo,h_id,const,rho
               real, parameter :: pi = 4.0*atan(1.0)
 
-              allocate(atoms_rdf(3,num_atoms))
-
               dr = 0.05
               dr = dr * sigma / length
-              nk = floor(0.5*length/dr)
+              nk = floor(0.5*length/(sigma*dr))
+              nk = min(nk, num_atoms) 
               !atoms_rdf = atoms/length
+              print *, nk
+
+!              allocate(atoms_rdf(3,nk))
 
               do i = 1, num_atoms
                do j = 1, num_atoms
@@ -33,6 +35,8 @@ module rdf_mod
               end do
 
               rij = 0.0
+              histogram = 0.0
+              g = 0.0
 
               print *, "nk=" , nk
 
@@ -77,7 +81,7 @@ module rdf_mod
 
               end if
 
-              deallocate(atoms_rdf)
+!              deallocate(atoms_rdf)
       end subroutine
 
 end module rdf_mod
