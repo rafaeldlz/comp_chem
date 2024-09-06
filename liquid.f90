@@ -5,13 +5,13 @@ use force_energy_mod
 use rdf_mod
 implicit none
 
-real, parameter :: sigma = 3.40          ! angstroms
+real, parameter :: sigma = 3.40E-10      ! meters
 real ::  sigma_bk 
 real, parameter :: density = 1.395       ! g/cm3
 real, parameter :: avogadro = 6.022E23  
 real, parameter :: mw = 40.0             ! g/mol
 real :: length,r
-integer, parameter :: num_atoms = 1000
+integer, parameter :: num_atoms = 500
 real :: atoms(3,num_atoms)               ! positions
 real :: velocity(3,num_atoms)            ! velocities
 real :: velocity_sq(num_atoms)           ! sqrt of the sum of squares of velocity components
@@ -24,11 +24,11 @@ real, parameter :: boltz_k = 1.380649E-23
 real :: energy_tot, energy_p, energy_k 
 real, parameter :: dt = 5.0E-15          ! femtoseconds
 real :: total_time
-integer, parameter :: num_steps = 1
+integer, parameter :: num_steps = 100
 
 ! Output files
 open (unit=11,file="liquid.xyz")
-write (11,fmt="(A)") "1000"
+write (11,fmt="(I0)") num_atoms
 open (unit=12,file="liquid_rdf.dat")
 open (unit=13,file="energies.dat")
 write (13, fmt="(4(A10,4x))") "Step","Total E","Potential","Kinetic"
@@ -37,10 +37,9 @@ open (unit=15, file="forces.dat")
 open (unit=16, file="timestep-velocities.dat")
 
 ! Calculate the length of the box
-length = (num_atoms)*(avogadro**-1)*(mw)*(density**-1)*(1E-6)
+length = (1000)*(avogadro**-1)*(mw)*(density**-1)*(1E-6)
 length = length**(1.0/3.0)
-length = length*(1E10)
-write (11,fmt="(A,1x,E8.2,1x,A)") "Length of box:",length,"angstroms"
+write (11,fmt="(A,1x,F0.0,1x,A)") "Length of box:",length*(1E10),"angstroms"
 print *, "Length:", length, "A"
 
 ! Generate initial coordinates (units = meters)
@@ -53,7 +52,7 @@ do i = 1, 10
       atoms(1,n) = i*length*0.1
       atoms(2,n) = j*length*0.1
       atoms(3,n) = k*length*0.1
-      write (11,fmt=*) "Ar", atoms(:,n)
+      write (11,fmt=*) "Ar", atoms(:,n)*(1E10)
     end do
   end do
 end do
@@ -82,21 +81,20 @@ velocity_sq(:) = sqrt(velocity(1,:)**2 + velocity(2,:)**2 + velocity(3,:)**2)
 call make_histogram(num_atoms,velocity,velocity_sq)
 
 ! Calculate the initial forces and energies
-print *, "length", length
 energy_p = 0.0
 energy_tot = 0.0
 energy_k = 0.0
 
-! Update the forces and calculate the potential energy of the system
+! Initialize the forces and calculate the potential energy of the system
 call force_energy(num_atoms,atoms,length,force,energy_p)
 print *, "start change in v", force(:,i) * dt * 0.5 /  (mw*(1E-3)/avogadro)
 
-! Update the kinetic energy of the system
+! Initialize the kinetic energy of the system
 do i = 1, num_atoms
  energy_k = energy_k + (0.5*(mw*(1E-3)/avogadro)*sum(velocity(:,i)**2))
 end do
 
-! Update the total energy of the system
+! Initialize the total energy of the system
 energy_tot = energy_p + energy_k
 write (13,fmt="(A4,5x,3(E10.4,3x))") "0", energy_tot, energy_p, energy_k
 
@@ -139,7 +137,7 @@ do t=1,num_steps
   write (16,*) velocity(:,i)
  end do
 
- ! Call the force + energy subroutine
+ ! Update the forces and energy
  energy_p = 0.0
  call force_energy(num_atoms,atoms,length,force,energy_p)
 
@@ -172,15 +170,15 @@ do t=1,num_steps
  write (13,fmt="(I4,5x,3(E10.4,3x))") t, energy_tot, energy_p, energy_k
  
  ! Write the new positions to output
- write (11,fmt="(A)") "1000"
+ write (11,fmt="(I0)") num_atoms
  write (11,*) "Timestep #", t
  do i = 1, num_atoms
-  write (11,*) "Ar", atoms(:,i)
+  write (11,*) "Ar", atoms(:,i)*(1E10)
  end do
  
- ! Do RDF for the last 1000 steps
+ ! Do RDF for the last 100 steps
  if (t.ge.num_steps-100) call rdf(num_atoms,atoms,length,t,sigma,num_steps)
- 
+
 end do
 
 ! Close the output files

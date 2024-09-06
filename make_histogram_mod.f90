@@ -38,8 +38,8 @@ module make_histogram_mod
                if (bin_index .le. n_bin) histo_velocity(bin_index) = histo_velocity(bin_index) + 1
               end do
 
-              ! For each bin, write the number, minimum, maximum, midpoint, number of velocities,
-              ! and number of velocity x-components
+              ! For each bin, write the number, minimum, maximum, midpoint, number of atoms with that velocity,
+              ! and number of atoms with that velocity x-component
               do i = 1, n_bin
                write (14,fmt="(I6,2x,F8.2,2x,F8.2,2x,F8.2,2x,I6,2x,I6)") i,(set_min+(i-1)*bin_width),(set_min+i*bin_width), &
                 &(set_min+(i-0.5)*bin_width),histo_velocity(i),histo_velx(i)

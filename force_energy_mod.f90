@@ -8,8 +8,8 @@ module force_energy_mod
 
       subroutine force_energy(num_atoms,atoms,length,force,energy_p)
         integer, intent(in) :: num_atoms
-        real, intent(in) :: atoms(:,:),length
-        real, intent(inout) :: force(:,:), energy_p
+        real :: atoms(3,num_atoms),length
+        real :: force(3,num_atoms), energy_p
         real :: rij(3), sr2,sr6,sr12,rij_sq,distance
         real, parameter :: sigma = 3.40E-10      ! meters
         real, parameter :: avogadro = 6.022E23

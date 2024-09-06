@@ -9,11 +9,11 @@ module rdf_mod
       subroutine rdf(num_atoms,atoms,length,t,sigma,num_steps)
               integer, intent(in) :: num_atoms, num_steps
               real, intent(in) :: atoms(:,:), length, sigma
-              real, allocatable :: atoms_rdf(:,:)
+              real :: atoms_rdf(3,num_atoms)
               integer, intent(in) :: t
               integer :: i, j, k, nk
-              real :: histogram(5*num_atoms)        ! Histogram for RDF
-              real :: g(5*num_atoms)                ! RDF
+              real :: histogram(5000)        ! Histogram for RDF
+              real :: g(5000)                ! RDF
               real :: dr, r1, r2, density_sigma
               real :: rij(3)
               real :: rij_sq,r_hi,r_lo,h_id,const,rho
@@ -22,13 +22,8 @@ module rdf_mod
               dr = 0.05
               dr = dr * sigma / length
               nk = floor(0.5*length/(sigma*dr))
-              nk = min(nk, num_atoms) 
-              !atoms_rdf = atoms/length
-              print *, nk
 
-!              allocate(atoms_rdf(3,nk))
-
-              do i = 1, num_atoms
+              do i = 1, 3
                do j = 1, num_atoms
                 atoms_rdf(i,j) = atoms(i,j)/length
                end do
@@ -37,8 +32,6 @@ module rdf_mod
               rij = 0.0
               histogram = 0.0
               g = 0.0
-
-              print *, "nk=" , nk
 
               do i = 1, (num_atoms-1)
                do j = (i+1), num_atoms
@@ -80,8 +73,6 @@ module rdf_mod
                close (16)
 
               end if
-
-!              deallocate(atoms_rdf)
       end subroutine
 
 end module rdf_mod
