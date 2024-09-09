@@ -22,7 +22,8 @@ module rdf_mod
               dr = 0.05
               dr = dr * sigma / length
               nk = floor(0.5*length/(sigma*dr))
-
+              
+              ! Rewrite the atomic coordinates in proportion to box length
               do i = 1, 3
                do j = 1, num_atoms
                 atoms_rdf(i,j) = atoms(i,j)/length
@@ -33,6 +34,8 @@ module rdf_mod
               histogram = 0.0
               g = 0.0
 
+              ! Record the number of unique atom pairs
+              ! whose vectors fall within each distance bin (x2)
               do i = 1, (num_atoms-1)
                do j = (i+1), num_atoms
                 rij(:) = atoms_rdf(:,i) - atoms_rdf(:,j)
@@ -43,21 +46,22 @@ module rdf_mod
                end do
               end do
 
-              !check histogram
+              ! Write the histogram
               open (17,file="hist-rdf.dat")
               do k = 1 , nk
                write (17,*) k, histogram(k)
               end do
-
+                
+              ! Calculate the rdf for each distance bin
               if (t.eq.num_steps) then
                print *, "Normalize rdf"
                rho = real(num_atoms)
                const = 4.0 * pi * rho / 3.0
                do k = 1, nk
-                g(k) = histogram(k) / real(num_atoms*num_steps) ! average number
+                g(k) = histogram(k) / real(num_atoms*num_steps) ! Average number
                 r_lo = real(k-1) * dr
                 r_hi = r_lo + dr
-                h_id = const * (r_hi**3 - r_lo**3) ! ideal number
+                h_id = const * (r_hi**3 - r_lo**3) ! Ideal number
                 g(k) = g(k) / h_id
                end do
 
@@ -65,7 +69,8 @@ module rdf_mod
                print *, "Printing to output"
 
                dr = dr * length
-
+                
+               ! Write the rdf
                open (unit=16,file="rdf.dat")
                do k = 1, nk
                 write (16, *) (real(k)-0.5)*dr, g(k)
