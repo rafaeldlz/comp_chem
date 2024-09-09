@@ -19,6 +19,7 @@ module rdf_mod
               real :: rij_sq,r_hi,r_lo,h_id,const,rho
               real, parameter :: pi = 4.0*atan(1.0)
 
+              ! Set the number of bins
               dr = 0.05
               dr = dr * sigma / length
               nk = floor(0.5*length/(sigma*dr))
