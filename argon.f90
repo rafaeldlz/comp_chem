@@ -1,4 +1,4 @@
-program liquid
+program argon
 use get_rand_mod
 use make_histogram_mod
 use force_energy_mod
@@ -27,9 +27,9 @@ real :: total_time
 integer, parameter :: num_steps = 100
 
 ! Output files
-open (unit=11,file="liquid.xyz")
+open (unit=11,file="argon.xyz")
 write (11,fmt="(I0)") num_atoms
-open (unit=12,file="liquid_rdf.dat")
+open (unit=12,file="argon_rdf.dat")
 open (unit=13,file="energies.dat")
 write (13, fmt="(4(A10,4x))") "Step","Total E","Potential","Kinetic"
 open (unit=14, file="histo-velocity.dat")
@@ -75,7 +75,9 @@ do j = 1, num_atoms/2
 end do
 
 ! Update the velocity magnitudes
-velocity_sq(:) = sqrt(velocity(1,:)**2 + velocity(2,:)**2 + velocity(3,:)**2) 
+do i = 1, num_atoms
+ velocity_sq(i) = sqrt(velocity(1,i)**2 + velocity(2,i)**2 + velocity(3,i)**2) 
+end do
 
 ! Make the histogram
 call make_histogram(num_atoms,velocity,velocity_sq)
@@ -186,4 +188,4 @@ do i=11,16
  close (i)
 end do
 
-end program liquid
+end program argon
